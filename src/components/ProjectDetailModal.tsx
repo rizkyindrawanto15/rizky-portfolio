@@ -7,6 +7,7 @@ import {
   Database,
   Check,
   ExternalLink,
+  Github,
 } from 'lucide-react';
 import { ProjectItem } from '../data/portfolioData';
 import { ProjectVisualPreview } from './ProjectVisualPreview';
@@ -143,15 +144,15 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                   </h2>
 
                   {(project.liveUrl || project.repoUrl) && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {project.liveUrl && (
                         <a
                           href={project.liveUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-[#05060a] text-xs font-medium"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-white/90 text-[#05060a] text-xs font-medium transition-colors"
                         >
-                          <span>Live</span>
+                          <span>Live Demo</span>
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}
@@ -160,10 +161,11 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                           href={project.repoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.08] text-white text-xs font-medium"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.1] text-white text-xs font-medium transition-colors"
                         >
+                          <Github className="w-3.5 h-3.5" />
                           <span>GitHub</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
+                          <ExternalLink className="w-3 h-3 opacity-75" />
                         </a>
                       )}
                     </div>

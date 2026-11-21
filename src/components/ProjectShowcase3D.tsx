@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
-import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUpRight, ExternalLink, Github } from 'lucide-react';
 import { ProjectItem } from '../data/portfolioData';
 
 interface ProjectShowcase3DProps {
@@ -1112,6 +1112,36 @@ export const ProjectShowcase3D: React.FC<ProjectShowcase3DProps> = ({
               </button>
             )}
           </div>
+
+          {/* Quick External Links Row (Live Demo & GitHub) */}
+          {(activeProject.liveUrl || activeProject.repoUrl) && (
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {activeProject.liveUrl && (
+                <a
+                  href={activeProject.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-500/[0.14] hover:bg-blue-500/[0.24] border border-blue-400/30 text-blue-200 hover:text-white text-xs font-medium transition-all"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Live Demo</span>
+                  <ExternalLink className="w-3 h-3 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              )}
+              {activeProject.repoUrl && (
+                <a
+                  href={activeProject.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 hover:text-white text-xs font-medium transition-all"
+                >
+                  <Github className="w-3.5 h-3.5" />
+                  <span>GitHub</span>
+                  <ArrowUpRight className="w-3 h-3 opacity-70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Minimal Apple Pill Pagination */}
           {projects.length > 1 && (
