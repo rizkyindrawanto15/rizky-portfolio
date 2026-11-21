@@ -1059,8 +1059,36 @@ export const CERTIFICATE_CATEGORIES: ('All' | CertificateCategory)[] = [
  */
 export const CERTIFICATES_DATA: CertificateItem[] = [
   {
-    id: 'cert-haskell-dicoding',
+    id: 'cert-se-hackerrank',
     index: '01',
+    title: 'Software Engineer (Role Certification)',
+    issuingOrganization: 'HackerRank',
+    issueDate: '09 November 2026',
+    category: 'Programming',
+    credentialId: '8F107FF60EEA',
+    verificationUrl: 'https://www.hackerrank.com/certificates/8f107ff60eea',
+    fileUrl: '/certificates/hackerrank-software-engineer.png',
+    previewImageUrl: '/certificates/hackerrank-software-engineer.png',
+    description:
+      'Sertifikasi peran resmi HackerRank (Software Engineer Role Certification Test) yang menguji kompetensi Problem Solving, Algorithms, Data Structures, SQL, dan REST API.',
+  },
+  {
+    id: 'cert-se-intern-hackerrank',
+    index: '02',
+    title: 'Software Engineer Intern (Role Certification)',
+    issuingOrganization: 'HackerRank',
+    issueDate: '21 November 2026',
+    category: 'Programming',
+    credentialId: '5BC98994FD90',
+    verificationUrl: 'https://www.hackerrank.com/certificates/5bc98994fd90',
+    fileUrl: '/certificates/hackerrank-software-engineer-intern.png',
+    previewImageUrl: '/certificates/hackerrank-software-engineer-intern.png',
+    description:
+      'Sertifikasi peran resmi HackerRank (Software Engineer Intern Role Certification Test) yang menguji kompetensi Problem Solving, Algorithms, Data Structures, dan SQL.',
+  },
+  {
+    id: 'cert-haskell-dicoding',
+    index: '03',
     title: 'Memulai Pemrograman dengan Haskell',
     issuingOrganization: 'Dicoding Indonesia',
     issueDate: '08 November 2026',
@@ -1074,7 +1102,7 @@ export const CERTIFICATES_DATA: CertificateItem[] = [
   },
   {
     id: 'cert-c-dicoding',
-    index: '02',
+    index: '04',
     title: 'Memulai Pemrograman Dengan C',
     issuingOrganization: 'Dicoding Indonesia',
     issueDate: '08 November 2026',
@@ -1088,7 +1116,7 @@ export const CERTIFICATES_DATA: CertificateItem[] = [
   },
   {
     id: 'cert-java-dicoding',
-    index: '03',
+    index: '05',
     title: 'Memulai Pemrograman Dengan Java',
     issuingOrganization: 'Dicoding Indonesia',
     issueDate: '27 Oktober 2026',
@@ -1102,7 +1130,7 @@ export const CERTIFICATES_DATA: CertificateItem[] = [
   },
   {
     id: 'cert-solid-dicoding',
-    index: '04',
+    index: '06',
     title: 'Belajar Prinsip Pemrograman SOLID',
     issuingOrganization: 'Dicoding Indonesia',
     issueDate: '27 Oktober 2026',
@@ -1116,7 +1144,7 @@ export const CERTIFICATES_DATA: CertificateItem[] = [
   },
   {
     id: 'cert-manajemen-proyek-dicoding',
-    index: '05',
+    index: '07',
     title: 'Belajar Dasar Manajemen Proyek',
     issuingOrganization: 'Dicoding Indonesia',
     issueDate: '26 Oktober 2026',
