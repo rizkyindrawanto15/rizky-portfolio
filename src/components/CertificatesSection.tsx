@@ -41,7 +41,7 @@ function getIssuerAccent(issuer: string): {
 }
 
 export const CertificatesSection: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'spiral' | 'grid' | 'list'>('spiral');
+  const [viewMode, setViewMode] = useState<'vault' | 'grid' | 'list'>('vault');
   const [selectedIssuer, setSelectedIssuer] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<
     'All' | CertificateCategory
@@ -236,16 +236,22 @@ export const CertificatesSection: React.FC = () => {
           </h2>
         </div>
 
-        {/* Row 1: View Mode Segmented Pill (spiral | grid | list) + Issuer Pills */}
+        {/* Row 1: View Mode Segmented Pill (3d vault | bento grid | list) + Issuer Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2.5 relative z-20">
           <div className="inline-flex items-center p-1 rounded-full bg-[#0e1017]/85 backdrop-blur-xl border border-white/[0.1] shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
-            {(['spiral', 'grid', 'list'] as const).map((mode) => {
-              const isActive = viewMode === mode;
+            {(
+              [
+                { id: 'vault', label: '3d vault' },
+                { id: 'grid', label: 'bento grid' },
+                { id: 'list', label: 'list' },
+              ] as const
+            ).map((mode) => {
+              const isActive = viewMode === mode.id;
               return (
                 <button
-                  key={mode}
+                  key={mode.id}
                   type="button"
-                  onClick={() => setViewMode(mode)}
+                  onClick={() => setViewMode(mode.id)}
                   style={{ color: isActive ? '#05060a' : undefined }}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-medium tracking-wide transition-colors duration-200 ${
                     isActive
@@ -253,7 +259,7 @@ export const CertificatesSection: React.FC = () => {
                       : 'bg-transparent text-white/70 hover:text-white'
                   }`}
                 >
-                  {mode}
+                  {mode.label}
                 </button>
               );
             })}
@@ -316,8 +322,8 @@ export const CertificatesSection: React.FC = () => {
         )}
       </div>
 
-      {/* Spiral View vs Bento Grid View vs Clean Minimalist List View */}
-      {viewMode === 'spiral' ? (
+      {/* 3D Vault View vs Bento Grid View vs Clean Minimalist List View */}
+      {viewMode === 'vault' ? (
         <div className="w-full">
           <CertificateSpiral3D
             certificates={filteredCertificates}
@@ -328,7 +334,7 @@ export const CertificatesSection: React.FC = () => {
             bringingForwardId={bringingForwardId}
             onSelectCert={handleSelectCertificateFromSpiral}
             isVisible={
-              isVisible && !activeCertificate && viewMode === 'spiral'
+              isVisible && !activeCertificate && viewMode === 'vault'
             }
             reducedMotion={reducedMotion}
           />
