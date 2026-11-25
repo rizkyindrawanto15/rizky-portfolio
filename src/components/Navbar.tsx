@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, Search, X } from 'lucide-react';
 import { PERSONAL_INFO } from '../data/portfolioData';
 
 export type NavSectionId =
@@ -15,6 +15,7 @@ export type NavSectionId =
 interface NavbarProps {
   activeSection: NavSectionId;
   onNavigate: (id: NavSectionId) => void;
+  onOpenCommandPalette: () => void;
 }
 
 const NAV_ITEMS: { id: NavSectionId; label: string }[] = [
@@ -27,7 +28,11 @@ const NAV_ITEMS: { id: NavSectionId; label: string }[] = [
   { id: 'contact', label: 'Contact' },
 ];
 
-export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  activeSection,
+  onNavigate,
+  onOpenCommandPalette,
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -109,8 +114,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
             })}
           </nav>
 
-          {/* Right Action / Mobile Toggle */}
+          {/* Right Action / Spotlight Search / Mobile Toggle */}
           <div className="pointer-events-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onOpenCommandPalette}
+              aria-label="Open quick search (Ctrl+K)"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-[#0e1017]/80 hover:bg-white/[0.14] backdrop-blur-xl border border-white/[0.1] text-xs font-medium text-white/80 hover:text-white transition-all"
+            >
+              <Search className="w-3.5 h-3.5 text-blue-400" />
+              <span className="hidden sm:inline font-mono text-[11px] text-white/55">
+                ⌘K
+              </span>
+            </button>
+
             <button
               type="button"
               onClick={() => handleNavClick('contact')}

@@ -24,8 +24,25 @@ import {
 } from '../data/portfolioData';
 import { CertificateSpiral3D } from './CertificateSpiral3D';
 
+function getIssuerAccent(issuer: string): {
+  dot: string;
+  shortName: string;
+} {
+  if (issuer.includes('HackerRank')) {
+    return { dot: 'bg-emerald-400', shortName: 'HackerRank' };
+  }
+  if (issuer.includes('IBM')) {
+    return { dot: 'bg-blue-400', shortName: 'IBM SkillsBuild' };
+  }
+  if (issuer.includes('Dicoding')) {
+    return { dot: 'bg-cyan-400', shortName: 'Dicoding' };
+  }
+  return { dot: 'bg-violet-400', shortName: issuer };
+}
+
 export const CertificatesSection: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'spiral' | 'list'>('spiral');
+  const [viewMode, setViewMode] = useState<'spiral' | 'grid' | 'list'>('spiral');
+  const [selectedIssuer, setSelectedIssuer] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<
     'All' | CertificateCategory
   >('All');
@@ -49,23 +66,66 @@ export const CertificatesSection: React.FC = () => {
       : CERTIFICATE_TEMPLATE_SPECIMENS;
   }, []);
 
+  const issuerOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of sourceItems) {
+      counts.set(c.issuingOrganization, (counts.get(c.issuingOrganization) ?? 0) + 1);
+    }
+    return [
+      { id: 'All', label: 'All Issuers', count: sourceItems.length },
+      ...Array.from(counts.entries()).map(([org, count]) => ({
+        id: org,
+        label: getIssuerAccent(org).shortName,
+        count,
+      })),
+    ];
+  }, [sourceItems]);
+
+  const issuerFilteredItems = useMemo(() => {
+    if (selectedIssuer === 'All') return sourceItems;
+    return sourceItems.filter((c) => c.issuingOrganization === selectedIssuer);
+  }, [sourceItems, selectedIssuer]);
+
   const availableCategories = useMemo(() => {
-    const present = new Set(sourceItems.map((c) => c.category));
+    const present = new Set(issuerFilteredItems.map((c) => c.category));
     return CERTIFICATE_CATEGORIES.filter(
       (cat) => cat === 'All' || present.has(cat)
     );
-  }, [sourceItems]);
+  }, [issuerFilteredItems]);
+
+  const effectiveCategory = availableCategories.includes(selectedCategory)
+    ? selectedCategory
+    : 'All';
 
   const filteredCertificates = useMemo(() => {
-    return sourceItems.filter(
-      (item) => selectedCategory === 'All' || item.category === selectedCategory
+    return issuerFilteredItems.filter(
+      (item) =>
+        effectiveCategory === 'All' || item.category === effectiveCategory
     );
-  }, [sourceItems, selectedCategory]);
+  }, [issuerFilteredItems, effectiveCategory]);
 
   useEffect(() => {
     setFocusedIndex(0);
     setHoveredCert(null);
-  }, [selectedCategory]);
+  }, [selectedIssuer, effectiveCategory]);
+
+  // Allow Command Palette (⌘K) to open any specific certificate modal directly
+  useEffect(() => {
+    const onOpenCert = (e: Event) => {
+      const certId = (e as CustomEvent<string>).detail;
+      const found = sourceItems.find((c) => c.id === certId);
+      if (found) {
+        setSelectedIssuer('All');
+        setSelectedCategory('All');
+        const idx = sourceItems.findIndex((c) => c.id === certId);
+        setFocusedIndex(Math.max(0, idx));
+        setActiveCertificate(found);
+      }
+    };
+    window.addEventListener('portfolio:open-certificate', onOpenCert);
+    return () =>
+      window.removeEventListener('portfolio:open-certificate', onOpenCert);
+  }, [sourceItems]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -166,101 +226,125 @@ export const CertificatesSection: React.FC = () => {
       className="relative py-20 sm:py-28 lg:py-32 bg-[#05060a] border-t border-white/[0.06] overflow-hidden"
     >
       {/* Apple-Minimal Centered Editorial Header */}
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 text-center space-y-6">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 text-center space-y-5">
         <div className="space-y-2.5">
           <span className="text-xs font-medium tracking-[0.2em] uppercase text-blue-400/90">
-            Certificates
+            Certificates · {sourceItems.length} Verified
           </span>
           <h2 className="text-4xl sm:text-5xl lg:text-[56px] font-semibold tracking-[-0.03em] text-white leading-[1.05]">
             Verified Credentials.
           </h2>
         </div>
 
-        {/* Framer / Apple Centered Floating Mode Pill + Optional Category Filter */}
-        <div className="flex flex-wrap items-center justify-center gap-3 pb-2 relative z-20">
-          <div className="inline-flex items-center p-1 rounded-full bg-white/[0.06] backdrop-blur-md border border-white/[0.1] shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
-            <button
-              type="button"
-              onClick={() => setViewMode('spiral')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200 ${
-                viewMode === 'spiral'
-                  ? 'bg-white text-[#05060a] shadow-sm'
-                  : 'text-white/65 hover:text-white'
-              }`}
-            >
-              spiral
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200 ${
-                viewMode === 'list'
-                  ? 'bg-white text-[#05060a] shadow-sm'
-                  : 'text-white/65 hover:text-white'
-              }`}
-            >
-              list
-            </button>
+        {/* Row 1: View Mode Segmented Pill (spiral | grid | list) + Issuer Pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 relative z-20">
+          <div className="inline-flex items-center p-1 rounded-full bg-[#0e1017]/85 backdrop-blur-xl border border-white/[0.1] shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
+            {(['spiral', 'grid', 'list'] as const).map((mode) => {
+              const isActive = viewMode === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setViewMode(mode)}
+                  style={{ color: isActive ? '#05060a' : undefined }}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium tracking-wide transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-white text-[#05060a] shadow-sm'
+                      : 'bg-transparent text-white/70 hover:text-white'
+                  }`}
+                >
+                  {mode}
+                </button>
+              );
+            })}
           </div>
 
-          {availableCategories.length > 2 && (
-            <div className="flex items-center gap-1.5">
-              {availableCategories.map((category) => {
-                const isSelected = selectedCategory === category;
+          {issuerOptions.length > 2 && (
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {issuerOptions.map((opt) => {
+                const isSelected = selectedIssuer === opt.id;
+                const accent =
+                  opt.id === 'All' ? null : getIssuerAccent(opt.id);
                 return (
                   <button
-                    key={category}
+                    key={opt.id}
                     type="button"
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                    onClick={() => setSelectedIssuer(opt.id)}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                       isSelected
-                        ? 'bg-white/15 text-white border border-white/20'
-                        : 'bg-white/[0.04] text-white/55 hover:text-white hover:bg-white/[0.08]'
+                        ? 'bg-white/15 text-white border border-white/25'
+                        : 'bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] border border-transparent'
                     }`}
                   >
-                    {category}
+                    {accent && (
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${accent.dot}`}
+                      />
+                    )}
+                    <span>{opt.label}</span>
+                    <span className="font-mono text-[10px] text-white/45">
+                      {opt.count}
+                    </span>
                   </button>
                 );
               })}
             </div>
           )}
         </div>
+
+        {/* Row 2: Domain Category Filter Pills */}
+        {availableCategories.length > 2 && (
+          <div className="flex flex-wrap items-center justify-center gap-1.5 pb-1 relative z-20">
+            {availableCategories.map((category) => {
+              const isSelected = effectiveCategory === category;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all duration-200 ${
+                    isSelected
+                      ? 'bg-blue-500/20 text-blue-200 border border-blue-400/30'
+                      : 'bg-white/[0.03] text-white/50 hover:text-white/85 hover:bg-white/[0.07] border border-transparent'
+                  }`}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Spiral View (Edge-to-Edge Open Borderless) vs Clean Minimalist List View */}
-      <AnimatePresence mode="wait">
-        {viewMode === 'spiral' ? (
-          <motion.div
-            key="spiral-view"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
-            className="w-full"
-          >
-            <CertificateSpiral3D
-              certificates={filteredCertificates}
-              focusedIndex={focusedIndex}
-              onFocusedIndexChange={setFocusedIndex}
-              hoveredCert={hoveredCert}
-              onHoverCert={setHoveredCert}
-              bringingForwardId={bringingForwardId}
-              onSelectCert={handleSelectCertificateFromSpiral}
-              isVisible={isVisible && !activeCertificate && viewMode === 'spiral'}
-              reducedMotion={reducedMotion}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="list-view"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3 }}
-            className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-12 pt-8 pb-6"
-          >
-            <div className="divide-y divide-white/[0.07]">
-              {filteredCertificates.map((cert, idx) => (
+      {/* Spiral View vs Bento Grid View vs Clean Minimalist List View */}
+      {viewMode === 'spiral' ? (
+        <div className="w-full">
+          <CertificateSpiral3D
+            certificates={filteredCertificates}
+            focusedIndex={focusedIndex}
+            onFocusedIndexChange={setFocusedIndex}
+            hoveredCert={hoveredCert}
+            onHoverCert={setHoveredCert}
+            bringingForwardId={bringingForwardId}
+            onSelectCert={handleSelectCertificateFromSpiral}
+            isVisible={
+              isVisible && !activeCertificate && viewMode === 'spiral'
+            }
+            reducedMotion={reducedMotion}
+          />
+        </div>
+      ) : viewMode === 'grid' ? (
+        <motion.div
+          key="grid-view"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="max-w-[1200px] mx-auto px-5 sm:px-8 pt-8 pb-4"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {filteredCertificates.map((cert, idx) => {
+              const accent = getIssuerAccent(cert.issuingOrganization);
+              return (
                 <button
                   key={cert.id}
                   type="button"
@@ -268,38 +352,117 @@ export const CertificatesSection: React.FC = () => {
                     setFocusedIndex(idx);
                     setActiveCertificate(cert);
                   }}
-                  className="group w-full py-5 flex items-center justify-between gap-4 sm:gap-6 text-left hover:bg-white/[0.025] px-3 -mx-3 rounded-xl transition-colors"
+                  className="group rounded-3xl bg-white/[0.025] hover:bg-white/[0.05] border border-white/[0.08] hover:border-white/[0.18] p-3.5 text-left flex flex-col justify-between gap-3.5 transition-all duration-300 shadow-[0_12px_36px_rgba(0,0,0,0.35)]"
+                >
+                  <div className="space-y-3.5 w-full">
+                    <div className="relative w-full aspect-[1.52/1] rounded-2xl overflow-hidden bg-[#0b0e17] border border-white/[0.06] flex items-center justify-center">
+                      {cert.previewImageUrl ? (
+                        <img
+                          src={cert.previewImageUrl}
+                          alt={cert.title}
+                          decoding="async"
+                          className="w-full h-full object-contain bg-[#f5f6f8] group-hover:scale-[1.025] transition-transform duration-500"
+                        />
+                      ) : (
+                        <span className="font-serif italic text-lg text-white/60 px-4 text-center">
+                          {cert.title}
+                        </span>
+                      )}
+                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[10px] font-mono text-white/90 border border-white/10">
+                        {cert.index}
+                      </span>
+                    </div>
+
+                    <div className="px-1 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2 text-[11px] font-mono text-white/50">
+                        <span className="inline-flex items-center gap-1.5 truncate">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full shrink-0 ${accent.dot}`}
+                          />
+                          <span className="truncate">{accent.shortName}</span>
+                        </span>
+                        <span className="shrink-0 text-white/40">
+                          {cert.category}
+                        </span>
+                      </div>
+
+                      <h3 className="text-sm sm:text-base font-medium text-white/95 group-hover:text-white tracking-tight line-clamp-2 leading-snug">
+                        {cert.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="px-1 pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2 text-[11px] font-mono text-white/45 w-full">
+                    <span className="truncate">
+                      {cert.credentialId
+                        ? `ID: ${cert.credentialId}`
+                        : cert.issueDate}
+                    </span>
+                    <ArrowUpRight className="w-4 h-4 text-white/35 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          key="list-view"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-12 pt-8 pb-6"
+        >
+          <div className="divide-y divide-white/[0.07]">
+            {filteredCertificates.map((cert, idx) => {
+              const accent = getIssuerAccent(cert.issuingOrganization);
+              return (
+                <button
+                  key={cert.id}
+                  type="button"
+                  onClick={() => {
+                    setFocusedIndex(idx);
+                    setActiveCertificate(cert);
+                  }}
+                  className="group w-full py-4 sm:py-5 flex items-center justify-between gap-4 sm:gap-6 text-left hover:bg-white/[0.025] px-3 -mx-3 rounded-xl transition-colors"
                 >
                   <div className="flex items-center gap-4 sm:gap-5 min-w-0">
                     {cert.previewImageUrl && (
                       <img
                         src={cert.previewImageUrl}
                         alt={cert.title}
-                        className="w-20 sm:w-28 aspect-[1.414/1] object-cover rounded-lg shrink-0 opacity-85 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-300"
+                        decoding="async"
+                        className="w-20 sm:w-28 aspect-[1.52/1] object-contain bg-[#f5f6f8] rounded-lg shrink-0 opacity-90 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-300"
                       />
                     )}
                     <div className="min-w-0 space-y-1">
-                      <div className="flex items-center gap-2.5 font-mono text-[11px] text-white/45">
+                      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-white/50">
                         <span className="text-blue-400">{cert.index}</span>
                         <span>·</span>
-                        <span>{cert.issuingOrganization}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${accent.dot}`}
+                          />
+                          <span>{cert.issuingOrganization}</span>
+                        </span>
                       </div>
                       <h3 className="text-base sm:text-lg font-normal text-white/90 group-hover:text-white truncate">
                         {cert.title}
                       </h3>
-                      <p className="text-xs text-white/45 font-mono">
+                      <p className="text-xs text-white/45 font-mono truncate">
                         {cert.issueDate}
+                        {cert.credentialId ? ` · ${cert.credentialId}` : ''}
                       </p>
                     </div>
                   </div>
 
                   <ArrowUpRight className="w-5 h-5 text-white/30 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
                 </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Full-Screen Certificate Detail & Zoom Modal */}
       <AnimatePresence>
@@ -367,7 +530,9 @@ export const CertificatesSection: React.FC = () => {
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">
-                      {activeCertificate.fileUrl.toLowerCase().endsWith('.pdf') ? 'PDF' : 'PNG'}
+                      {activeCertificate.fileUrl.toLowerCase().endsWith('.pdf')
+                        ? 'PDF'
+                        : 'PNG'}
                     </span>
                   </a>
                 )}

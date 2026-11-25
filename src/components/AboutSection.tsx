@@ -1,6 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Code2, Smartphone, Database, Palette, MapPin, GraduationCap } from 'lucide-react';
+import {
+  Code2,
+  Smartphone,
+  Database,
+  Sparkles,
+  MapPin,
+  GraduationCap,
+} from 'lucide-react';
 import {
   PERSONAL_INFO,
   PROJECTS_DATA,
@@ -11,23 +18,23 @@ import {
 const FOCUS_TILES = [
   {
     icon: Code2,
-    title: 'Web Apps',
-    subtitle: 'Next.js · React · Laravel',
+    title: 'Web & 3D UI',
+    subtitle: 'Next.js · TypeScript · Three.js',
+  },
+  {
+    icon: Database,
+    title: 'Backend & DB',
+    subtitle: 'Laravel · Node.js · Supabase',
+  },
+  {
+    icon: Sparkles,
+    title: 'AI & Prompting',
+    subtitle: 'GenAI · Prompt Engineering',
   },
   {
     icon: Smartphone,
     title: 'Mobile Dev',
     subtitle: 'React Native · Expo',
-  },
-  {
-    icon: Database,
-    title: 'Databases',
-    subtitle: 'MySQL · Supabase PostgreSQL',
-  },
-  {
-    icon: Palette,
-    title: 'UI / UX',
-    subtitle: 'Figma · Clean Systems',
   },
 ];
 

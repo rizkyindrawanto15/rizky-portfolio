@@ -213,6 +213,107 @@ export const SkillIcon: React.FC<{ name: string; className?: string }> = ({
         </svg>
       );
 
+    case 'nextjs':
+    case 'next':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <circle cx="16" cy="16" r="14" fill="#000000" stroke="rgba(255,255,255,0.22)" strokeWidth="1.2" />
+          <path d="M11 21.5V10.5H13.1L22.5 23.2C21.8 23.8 21 24.3 20.1 24.7L13.1 14.9V21.5H11Z" fill="#FFFFFF" />
+          <rect x="19.4" y="10.5" width="2.1" height="8.5" fill="url(#nextGrad)" />
+          <defs>
+            <linearGradient id="nextGrad" x1="20.45" y1="10.5" x2="20.45" y2="19" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#FFFFFF" />
+              <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+
+    case 'typescript':
+    case 'ts':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <rect width="32" height="32" rx="5" fill="#3178C6" />
+          <path d="M18.2 15.5H14.8V25.5H12.2V15.5H8.8V13.3H18.2V15.5Z" fill="#FFFFFF" />
+          <path d="M26.5 22.2C26.5 24.4 24.7 25.7 22.1 25.7C20.4 25.7 19 25.1 18.2 24.4L19.4 22.5C20.1 23.1 21.1 23.5 22.1 23.5C23.2 23.5 23.9 23.1 23.9 22.3C23.9 21.6 23.3 21.2 21.8 20.6C19.6 19.7 18.6 18.7 18.6 16.8C18.6 14.7 20.3 13.2 22.7 13.2C24.2 13.2 25.4 13.6 26.2 14.2L25.1 16.1C24.4 15.6 23.6 15.3 22.7 15.3C21.7 15.3 21.1 15.8 21.1 16.5C21.1 17.2 21.6 17.6 23.2 18.2C25.4 19.1 26.5 20.1 26.5 22.2Z" fill="#FFFFFF" />
+        </svg>
+      );
+
+    case 'tailwindcss':
+    case 'tailwind':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <rect width="32" height="32" rx="6" fill="#0F172A" />
+          <path d="M16 9.5C12.8 9.5 10.8 11.1 10 14.3C11.2 12.7 12.6 12.1 14.2 12.5C15.1 12.7 15.8 13.4 16.5 14.2C17.7 15.4 19.1 16.8 22 16.8C25.2 16.8 27.2 15.2 28 12C26.8 13.6 25.4 14.2 23.8 13.8C22.9 13.6 22.2 12.9 21.5 12.1C20.3 10.9 18.9 9.5 16 9.5ZM10 16.8C6.8 16.8 4.8 18.4 4 21.6C5.2 20 6.6 19.4 8.2 19.8C9.1 20 9.8 20.7 10.5 21.5C11.7 22.7 13.1 24.1 16 24.1C19.2 24.1 21.2 22.5 22 19.3C20.8 20.9 19.4 21.5 17.8 21.1C16.9 20.9 16.2 20.2 15.5 19.4C14.3 18.2 12.9 16.8 10 16.8Z" fill="#38BDF8" />
+        </svg>
+      );
+
+    case 'threejs':
+    case 'three':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <rect width="32" height="32" rx="6" fill="#0B0D14" />
+          <path d="M8 6.5L25.5 11.5L12.5 26L8 6.5Z" stroke="#FFFFFF" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M16.7 9L10.3 16.3L19 18.8L16.7 9Z" stroke="#93C5FD" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M10.3 16.3L12.5 26L19 18.8" stroke="#FFFFFF" strokeOpacity="0.65" strokeWidth="1.2" strokeLinejoin="round" />
+        </svg>
+      );
+
+    case 'nodejs':
+    case 'node':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <path d="M16 3L27.2 9.5V22.5L16 29L4.8 22.5V9.5L16 3Z" fill="#339933" />
+          <path d="M16 8.5L22.5 12.2V19.8L16 23.5L9.5 19.8V12.2L16 8.5Z" fill="#1E293B" opacity="0.28" />
+          <text x="16" y="19.5" textAnchor="middle" fill="#FFFFFF" fontFamily="sans-serif" fontWeight="800" fontSize="9.5">JS</text>
+        </svg>
+      );
+
+    case 'laravel':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <rect width="32" height="32" rx="6" fill="#1A0B0E" />
+          <path d="M7 9.5L12.5 6.5L18 9.5V16.5L22.5 14L26.5 16.2V22.2L17.5 27.2L12 24.2V17.2L7 14.5V9.5Z" stroke="#FF2D20" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M12.5 6.5V13.5M18 9.5L12.5 12.5L7 9.5M17.5 20.5V27.2M26.5 16.2L17.5 21.2L12 18.2" stroke="#FF2D20" strokeWidth="1.4" strokeLinejoin="round" />
+        </svg>
+      );
+
+    case 'vercel':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <rect width="32" height="32" rx="6" fill="#000000" stroke="rgba(255,255,255,0.18)" strokeWidth="1.2" />
+          <path d="M16 7.5L26 24.5H6L16 7.5Z" fill="#FFFFFF" />
+        </svg>
+      );
+
+    case 'genai':
+    case 'ai':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <rect width="32" height="32" rx="6" fill="#0F172A" />
+          <path d="M16 5.5L18.4 13.6L26.5 16L18.4 18.4L16 26.5L13.6 18.4L5.5 16L13.6 13.6L16 5.5Z" fill="url(#aiSpark)" />
+          <circle cx="24" cy="8" r="1.6" fill="#93C5FD" />
+          <circle cx="8.5" cy="23.5" r="1.2" fill="#C4B5FD" />
+          <defs>
+            <linearGradient id="aiSpark" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#60A5FA" />
+              <stop offset="1" stopColor="#A78BFA" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+
+    case 'prompting':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" className={className}>
+          <rect width="32" height="32" rx="6" fill="#111827" />
+          <rect x="5" y="7" width="22" height="18" rx="3.5" stroke="#60A5FA" strokeWidth="1.6" />
+          <path d="M9.5 13L13 16L9.5 19" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M15.5 19H20.5" stroke="#93C5FD" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="23" cy="11.5" r="1.4" fill="#A78BFA" />
+        </svg>
+      );
+
     default:
       return (
         <div className="w-full h-full rounded bg-blue-500/20 border border-blue-400/40 flex items-center justify-center font-mono text-xs font-bold text-blue-400">

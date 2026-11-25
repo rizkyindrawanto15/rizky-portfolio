@@ -1,8 +1,16 @@
-import React, { Component, ErrorInfo, ReactNode, Suspense, useEffect, useState } from 'react';
+import React, {
+  Component,
+  ErrorInfo,
+  ReactNode,
+  Suspense,
+  useEffect,
+  useState,
+} from 'react';
 import { Navbar, NavSectionId } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { AboutSection } from './components/AboutSection';
 import { CustomCursor } from './components/CustomCursor';
+import { CommandPalette } from './components/CommandPalette';
 
 const EducationTimelineSection = React.lazy(() =>
   import('./components/EducationTimelineSection').then((m) => ({
@@ -89,10 +97,17 @@ const SECTION_IDS: NavSectionId[] = [
 
 export function App() {
   const [activeSection, setActiveSection] = useState<NavSectionId>('home');
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [commandOpen, setCommandOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + window.innerHeight * 0.34;
+      const maxScroll = Math.max(
+        1,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+      setScrollProgress(Math.min(1, Math.max(0, window.scrollY / maxScroll)));
 
       for (let i = SECTION_IDS.length - 1; i >= 0; i--) {
         const id = SECTION_IDS[i];
@@ -109,6 +124,18 @@ export function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Global Spotlight Shortcut: Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, []);
+
   const scrollToSection = (id: NavSectionId) => {
     const element = document.getElementById(id);
     if (element) {
@@ -117,9 +144,34 @@ export function App() {
     }
   };
 
+  const handleOpenProjectFromPalette = (projectId: string) => {
+    scrollToSection('projects');
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent('portfolio:open-project', { detail: projectId })
+      );
+    }, 120);
+  };
+
+  const handleOpenCertFromPalette = (certId: string) => {
+    scrollToSection('certificates');
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent('portfolio:open-certificate', { detail: certId })
+      );
+    }, 120);
+  };
+
   return (
     <PortfolioErrorBoundary>
       <div className="min-h-screen bg-[#030305] text-[#f4f4f6] relative selection:bg-blue-500/30 selection:text-white">
+        {/* Ultra-Sleek 1.5px Top Reading Progress Hairline */}
+        <div
+          className="pointer-events-none fixed top-0 left-0 right-0 h-[1.5px] z-[65] origin-left bg-gradient-to-r from-blue-500 via-indigo-400 to-white/90"
+          style={{ transform: `scaleX(${scrollProgress})` }}
+          aria-hidden="true"
+        />
+
         {/* Delicate Film Grain Texture Overlay */}
         <div
           className="pointer-events-none fixed inset-0 z-[60] grain-overlay"
@@ -130,7 +182,20 @@ export function App() {
         <CustomCursor />
 
         {/* Minimalist Editorial Navigation */}
-        <Navbar activeSection={activeSection} onNavigate={scrollToSection} />
+        <Navbar
+          activeSection={activeSection}
+          onNavigate={scrollToSection}
+          onOpenCommandPalette={() => setCommandOpen(true)}
+        />
+
+        {/* Apple / Linear Spotlight Command Palette (⌘K) */}
+        <CommandPalette
+          isOpen={commandOpen}
+          onClose={() => setCommandOpen(false)}
+          onNavigateSection={scrollToSection}
+          onOpenProject={handleOpenProjectFromPalette}
+          onOpenCertificate={handleOpenCertFromPalette}
+        />
 
         {/* Main Content */}
         <main>

@@ -205,7 +205,7 @@ export const ParticleFaceCanvas: React.FC<ParticleFaceCanvasProps> = ({
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = `/portrait-source.jpg?v=${Date.now()}`;
+    img.src = '/portrait-source.jpg';
 
     img.onload = () => {
       if (isDisposed) return;

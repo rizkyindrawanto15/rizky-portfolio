@@ -1065,6 +1065,11 @@ export const ProjectShowcase3D: React.FC<ProjectShowcase3DProps> = ({
                 className="space-y-1.5"
               >
                 <div className="inline-flex items-center gap-2 text-[11px] font-medium tracking-wide text-blue-400/90">
+                  <span className="font-mono text-white/55">
+                    {String(activeIndex + 1).padStart(2, '0')} /{' '}
+                    {String(projects.length).padStart(2, '0')}
+                  </span>
+                  <span className="text-white/25">·</span>
                   <span>{activeProject.category}</span>
                   <span className="text-white/25">·</span>
                   <span className="text-white/45">{activeProject.year}</span>

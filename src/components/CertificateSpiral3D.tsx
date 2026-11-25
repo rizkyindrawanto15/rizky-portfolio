@@ -7,7 +7,7 @@ import { CertificateItem } from '../data/portfolioData';
 interface CertificateSpiral3DProps {
   certificates: CertificateItem[];
   focusedIndex: number;
-  onFocusedIndexChange: (index: number) => void;
+  onFocusedIndexChange: React.Dispatch<React.SetStateAction<number>>;
   hoveredCert: CertificateItem | null;
   onHoverCert: (cert: CertificateItem | null) => void;
   bringingForwardId: string | null;
@@ -102,11 +102,27 @@ function createFloatingCertTexture(cert: CertificateItem): THREE.CanvasTexture {
       roundedRectPath(ctx, 4, 4, W - 8, H - 8, RADIUS);
       ctx.clip();
 
-      // Cover-fit edge-to-edge cleanly inside the rounded floating tile
-      const scale = Math.max((W - 8) / img.width, (H - 8) / img.height);
-      const dw = img.width * scale;
-      const dh = img.height * scale;
-      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      const innerW = W - 8;
+      const innerH = H - 8;
+      const cardAspect = innerW / innerH;
+      const imgAspect = img.width / Math.max(1, img.height);
+
+      if (imgAspect > cardAspect * 1.05) {
+        // Wide landscape credentials (e.g. IBM SkillsBuild 1984x1227):
+        // Extend the top/bottom neutral banner bars seamlessly so zero left/right text is cropped
+        ctx.fillStyle = '#a8a8a8';
+        ctx.fillRect(4, 4, innerW, innerH);
+        const scale = innerW / img.width;
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      } else {
+        // Standard A4 / 4:3 credentials (Dicoding, HackerRank): edge-to-edge cover fit
+        const scale = Math.max(innerW / img.width, innerH / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      }
 
       // Subtle silky diagonal glass-paper light gradient
       const sheen = ctx.createLinearGradient(0, 0, W, H);
@@ -115,6 +131,12 @@ function createFloatingCertTexture(cert: CertificateItem): THREE.CanvasTexture {
       sheen.addColorStop(1, 'rgba(0, 0, 0, 0.1)');
       ctx.fillStyle = sheen;
       ctx.fillRect(0, 0, W, H);
+
+      // Delicate Apple glass specular rim
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+      ctx.lineWidth = 2.5;
+      roundedRectPath(ctx, 5, 5, W - 10, H - 10, RADIUS - 1);
+      ctx.stroke();
 
       ctx.restore();
       texture.needsUpdate = true;
@@ -240,7 +262,14 @@ const SpiralCertificateCard: React.FC<SpiralCardProps> = ({
     if (count > 1) {
       baseX = Math.sin(phase) * radiusX;
       const rearLift = count === 4 ? Math.pow(1 - frontFactor, 2) * 1.15 : 0;
-      baseY = Math.sin(phase * 2) * radiusY + Math.sin(phase) * 0.22 + rearLift;
+      const harmonicLift = count >= 10 ? Math.sin(phase * 3) * 0.11 : 0;
+      const frontCenterLift = frontFactor * 0.18;
+      baseY =
+        Math.sin(phase * 2) * radiusY +
+        Math.sin(phase) * 0.14 +
+        harmonicLift +
+        frontCenterLift +
+        rearLift;
       baseZ = Math.cos(phase) * radiusZ;
     }
 
@@ -252,11 +281,14 @@ const SpiralCertificateCard: React.FC<SpiralCardProps> = ({
       ? 0
       : Math.cos(t * 0.62 + index * 1.15) * 0.05;
 
-    const targetBoost = isBringingForward ? 1.15 : isHovered ? 0.36 : 0;
+    const denseDeck = count >= 10;
+    const targetBoost = isBringingForward ? 1.18 : isHovered ? 0.38 : 0;
     const targetScale = isBringingForward
       ? 1.2
       : isHovered
-      ? 0.84 + frontFactor * 0.36
+      ? 0.82 + frontFactor * 0.38
+      : denseDeck
+      ? 0.66 + Math.pow(frontFactor, 1.65) * 0.48
       : 0.72 + Math.pow(frontFactor, 1.35) * 0.42;
 
     smoothState.current.forwardBoost = THREE.MathUtils.lerp(
@@ -311,16 +343,19 @@ const SpiralCertificateCard: React.FC<SpiralCardProps> = ({
 
     // Smooth atmospheric depth shading (front hero = crisp 100%, deep spiral cards softer)
     if (frontMatRef.current) {
+      const depthFocus = denseDeck ? Math.pow(frontFactor, 1.25) : frontFactor;
       const shade =
-        isBringingForward || isHovered ? 1.0 : 0.48 + frontFactor * 0.52;
+        isBringingForward || isHovered ? 1.0 : 0.44 + depthFocus * 0.56;
       frontMatRef.current.color.setScalar(shade);
       frontMatRef.current.emissiveIntensity = isBringingForward
         ? 0.26
         : isHovered
         ? 0.22
-        : 0.08 + frontFactor * 0.14;
+        : 0.07 + depthFocus * 0.15;
       const cardOpacity =
-        isBringingForward || isHovered ? 1.0 : 0.72 + frontFactor * 0.28;
+        isBringingForward || isHovered
+          ? 1.0
+          : (denseDeck ? 0.58 : 0.72) + depthFocus * (denseDeck ? 0.42 : 0.28);
       frontMatRef.current.opacity = cardOpacity;
       frontMatRef.current.depthWrite = cardOpacity > 0.94;
     }
@@ -438,12 +473,19 @@ const SpiralScene: React.FC<SpiralSceneProps> = ({
   const lastReportedIdx = useRef<number>(focusedIndex);
 
   const count = certificates.length;
-  const radiusX = isCompact ? 2.15 : 3.32;
-  const radiusY = isCompact ? 1.08 : 1.38;
-  const radiusZ = isCompact ? 1.7 : 2.25;
-  const cardWidth = isCompact ? 2.2 : 2.58;
+  const crowdFactor = Math.min(1, Math.max(0, (count - 7) / 8));
+  const radiusX = isCompact
+    ? 2.15 + crowdFactor * 0.45
+    : 3.32 + crowdFactor * 1.12;
+  const radiusY = isCompact ? 0.84 : 1.02;
+  const radiusZ = isCompact
+    ? 1.7 + crowdFactor * 0.45
+    : 2.25 + crowdFactor * 0.95;
+  const cardWidth = isCompact ? 2.15 : 2.52;
   const cardHeight = cardWidth / 1.414;
-  const baseCamZ = isCompact ? 8.15 : 7.6;
+  const baseCamZ = isCompact
+    ? 8.35 + crowdFactor * 0.85
+    : 7.75 + crowdFactor * 1.4;
 
   // Sync external focusedIndex changes (prev/next arrows) smoothly
   useEffect(() => {
@@ -618,9 +660,16 @@ export const CertificateSpiral3D: React.FC<CertificateSpiral3DProps> = ({
   const stepSpiral = (dir: -1 | 1) => {
     if (certificates.length <= 1) return;
     onFocusedIndexChange(
-      (focusedIndex + dir + certificates.length) % certificates.length
+      (prev) => (prev + dir + certificates.length) % certificates.length
     );
   };
+
+  const activeCertIndex = hoveredCert
+    ? Math.max(
+        0,
+        certificates.findIndex((c) => c.id === hoveredCert.id)
+      )
+    : Math.min(focusedIndex, Math.max(0, certificates.length - 1));
 
   const activeCert =
     hoveredCert || certificates[focusedIndex] || certificates[0] || null;
@@ -720,8 +769,15 @@ export const CertificateSpiral3D: React.FC<CertificateSpiral3DProps> = ({
                     className="w-8 h-[22px] object-cover rounded-[4px] shrink-0 opacity-95 group-hover:opacity-100 transition-opacity"
                   />
                 )}
-                <span className="text-xs sm:text-sm font-medium text-white/95 group-hover:text-white tracking-tight truncate max-w-[190px] sm:max-w-[300px]">
+                <span className="font-mono text-[11px] text-blue-400/90 shrink-0">
+                  {String(activeCertIndex + 1).padStart(2, '0')}/
+                  {String(certificates.length).padStart(2, '0')}
+                </span>
+                <span className="text-xs sm:text-sm font-medium text-white/95 group-hover:text-white tracking-tight truncate max-w-[165px] sm:max-w-[290px]">
                   {activeCert.title}
+                </span>
+                <span className="hidden md:inline text-[11px] font-mono text-white/45 shrink-0">
+                  · {activeCert.issuingOrganization.replace(' Indonesia', '')}
                 </span>
               </button>
 
